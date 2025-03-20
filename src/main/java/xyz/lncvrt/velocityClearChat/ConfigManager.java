@@ -7,8 +7,10 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class ConfigManager {
     private final Path configPath;
@@ -19,43 +21,31 @@ public class ConfigManager {
     public ConfigManager(@DataDirectory Path dataDirectory) {
         this.configPath = dataDirectory.resolve("config.conf");
         this.loader = HoconConfigurationLoader.builder().path(configPath).build();
+        ensureConfigExists();
         loadConfig();
+    }
+
+    private void ensureConfigExists() {
+        if (Files.notExists(configPath)) {
+            try (InputStream defaultConfig = getClass().getClassLoader().getResourceAsStream("config.conf")) {
+                if (defaultConfig != null) {
+                    Files.createDirectories(configPath.getParent());
+                    Files.copy(defaultConfig, configPath, StandardCopyOption.REPLACE_EXISTING);
+                } else {
+                    System.err.println("Default config.conf not found in resources!");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void loadConfig() {
         try {
-            if (Files.notExists(configPath)) {
-                saveDefaultConfig();
-            }
             root = loader.load();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void saveDefaultConfig() throws IOException {
-        Files.createDirectories(configPath.getParent());
-
-        root = loader.load();
-        root.node("lines")
-                .set(100)
-                .comment("The number of lines the chat clearer will send.");
-        root.node("chat-cleared-message")
-                .set("<green>Chat has been cleared by an admin</green>")
-                .comment("The message to send when the chat is cleared by an admin.\nYou can use <player> if you would like to display who cleared the chat.");
-        root.node("chat-clear-failed-message")
-                .set("<red>Failed to get server info</red>")
-                .comment("If velocity returns invalid information, this message will be displayed.");
-        root.node("clear-permission")
-                .set("lncvrt.velocityclearchat.clear")
-                .comment("The permission an admin needs to clear the chat.");
-        root.node("clear-on-server-swap")
-                .set(true)
-                .comment("On player swap, should we clear the chat history?");
-        root.node("clear-on-server-swap-message")
-                .set("")
-                .comment("The message to display if \"clear-on-server-swap\" is enabled, set to \"\" to disable it.");
-        loader.save(root);
     }
 
     public int getLines() {

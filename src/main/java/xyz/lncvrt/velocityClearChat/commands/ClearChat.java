@@ -30,18 +30,18 @@ public class ClearChat implements SimpleCommand {
             //no idea how to make this not so shitty
             ServerConnection server = player.getCurrentServer().orElse(null);
             if (server == null) {
-                player.sendMessage(miniMessage.deserialize(configManager.getClearFailed()));
+                if (!configManager.getClearFailed().isEmpty()) player.sendMessage(miniMessage.deserialize(configManager.getClearFailed()));
                 return;
             }
             RegisteredServer registeredServer = server.getServer();
             if (registeredServer == null) {
-                player.sendMessage(miniMessage.deserialize(configManager.getClearFailed()));
+                if (!configManager.getClearFailed().isEmpty()) player.sendMessage(miniMessage.deserialize(configManager.getClearFailed()));
                 return;
             }
             Collection<Player> players = registeredServer.getPlayersConnected();
             for (Player targetPlayer : players) {
                 for (int i = 0; i < configManager.getLines(); i++) targetPlayer.sendMessage(miniMessage.deserialize(" ".repeat((i % 10) + 1)));
-                targetPlayer.sendMessage(miniMessage.deserialize(configManager.getClearedMessage().replace("<player>", player.getUsername())));
+                if (!configManager.getClearedMessage().isEmpty()) targetPlayer.sendMessage(miniMessage.deserialize(configManager.getClearedMessage().replace("<player>", player.getUsername())));
             }
         }
     }

@@ -19,14 +19,12 @@ import java.nio.file.Path;
 
 @Plugin(id = "velocityclearchat", name = "VelocityClearChat", authors = {"Lncvrt"}, version = BuildConstants.VERSION)
 public class VelocityClearChat {
-    private final Logger logger;
     private final ProxyServer proxyServer;
     public ConfigManager configManager;
     public final MiniMessage miniMessage = MiniMessage.miniMessage();
 
     @Inject
     public VelocityClearChat(Logger logger, ProxyServer proxyServer, @DataDirectory Path dataDirectory) {
-        this.logger = logger;
         this.proxyServer = proxyServer;
         this.configManager = new ConfigManager(dataDirectory);
     }
@@ -49,9 +47,7 @@ public class VelocityClearChat {
         if (configManager.getClearOnSwap()) {
             Player player = event.getPlayer();
             for (int i = 0; i < configManager.getLines(); i++) player.sendMessage(miniMessage.deserialize(" ".repeat((i % 10) + 1)));
-            if (!configManager.getClearOnSwapMessage().isEmpty()) {
-                player.sendMessage(miniMessage.deserialize(configManager.getClearOnSwapMessage()));
-            }
+            if (!configManager.getClearOnSwapMessage().isEmpty()) player.sendMessage(miniMessage.deserialize(configManager.getClearOnSwapMessage()));
         }
     }
 }
